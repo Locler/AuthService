@@ -1,5 +1,6 @@
 package com.dtos;
 
+import com.enums.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,7 +21,6 @@ public class RegisterRequest {
     @Size(min = 4, max = 64, message = "Password must be between 4 and 64 characters")
     private String password;
 
-    @NotBlank
-    private String role;
+    private Role role;
 }
 

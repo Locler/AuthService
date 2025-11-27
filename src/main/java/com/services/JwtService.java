@@ -1,5 +1,6 @@
 package com.services;
 
+import com.enums.Role;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -30,37 +31,44 @@ public class JwtService {
         key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    public String generateAccessToken(Long userId, String role) {
+    public String generateAccessToken(Long userId, Role role) {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
-                .claim("role", role)
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + accessExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateRefreshToken(Long userId, String role) {
+    public String generateRefreshToken(Long userId, Role role) {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
-                .claim("role", role)
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public Jws<Claims> parse(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+    // Разбор токена — возвращает Claims
+    public Claims parse(String token) {
+        Jws<Claims> jws = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);  // <-- parseClaimsJws вместо parse()
+        return jws.getBody();
     }
 
+    // Проверка валидности
     public boolean validate(String token) {
         try {
             parse(token);
             return true;
-        } catch (JwtException | IllegalArgumentException ex) {
+        } catch (Exception e) {
             return false;
         }
     }
+
 
 }

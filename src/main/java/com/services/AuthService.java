@@ -5,7 +5,9 @@ import com.dtos.RegisterRequest;
 import com.dtos.TokenResponse;
 import com.dtos.ValidateResponse;
 import com.entities.Credential;
+import com.enums.Role;
 import com.repositories.CredentialRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -22,6 +24,9 @@ public class AuthService {
 
     @Transactional
     public void register(RegisterRequest req) {
+        if (req.getRole() == null) {
+            throw new IllegalArgumentException("Role is required");
+        }
         if (repo.findByUsername(req.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
@@ -50,18 +55,22 @@ public class AuthService {
         // if userId null, we still can encode userId in token as 0 or throw.
         if (userId == null) throw new IllegalArgumentException("Credential is not linked to userId");
 
-        String access = jwtService.generateAccessToken(userId, cred.getRole());
-        String refresh = jwtService.generateRefreshToken(userId, cred.getRole());
+        Role role = cred.getRole();
+
+        String access = jwtService.generateAccessToken(userId, role);
+        String refresh = jwtService.generateRefreshToken(userId, role);
         return new TokenResponse(access, refresh);
     }
 
     public TokenResponse refresh(String refreshToken) {
-        if (!jwtService.validate(refreshToken)) { // <-- обращаем условие
+        if (!jwtService.validate(refreshToken)) {
             throw new IllegalArgumentException("Invalid refresh token");
         }
-        var claims = jwtService.parse(refreshToken).getBody();
+
+        Claims claims = jwtService.parse(refreshToken);
         Long userId = Long.valueOf(claims.getSubject());
-        String role = claims.get("role", String.class);
+        Role role = Role.valueOf(claims.get("role", String.class));
+
         return new TokenResponse(
                 jwtService.generateAccessToken(userId, role),
                 jwtService.generateRefreshToken(userId, role)
@@ -69,10 +78,14 @@ public class AuthService {
     }
 
     public ValidateResponse validate(String token) {
-        if (!jwtService.validate(token)) return new ValidateResponse(null, null, false);
-        var claims = jwtService.parse(token).getBody();
+        if (!jwtService.validate(token)) {
+            return new ValidateResponse(null, null, false);
+        }
+
+        Claims claims = jwtService.parse(token);
         Long userId = Long.valueOf(claims.getSubject());
-        String role = claims.get("role", String.class);
+        Role role = Role.valueOf(claims.get("role", String.class));
+
         return new ValidateResponse(userId, role, true);
     }
 }

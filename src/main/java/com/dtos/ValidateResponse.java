@@ -1,5 +1,6 @@
 package com.dtos;
 
+import com.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,7 +10,7 @@ public class ValidateResponse {
 
     private final Long userId;
 
-    private final String role;
+    private final Role role;
 
     private final boolean valid;
 }

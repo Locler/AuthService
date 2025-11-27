@@ -1,5 +1,6 @@
 package com.entities;
 
+import com.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,5 +28,6 @@ public class Credential {
     private String passwordHash;
 
     @Column(nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
