@@ -2,11 +2,8 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.17.xsd">
 
-    <include file="db/changelog/001-init-credential-shema.xml"/>
-
-    <changeSet id="0" author="admin">
-    </changeSet>
+    <include file="db/changelog/001-init-credential-shema.xml" relativeToChangelogFile="false"/>
 
 </databaseChangeLog>
