@@ -30,4 +30,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleOther(Exception ex) {
         return ResponseEntity.status(500).body(Map.of("error", "Unexpected error"));
     }
+
 }

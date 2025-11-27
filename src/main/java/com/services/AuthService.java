@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +22,14 @@ public class AuthService {
 
     @Transactional
     public void register(RegisterRequest req) {
-        repo.findByUsername(req.getUsername()).ifPresent(u -> {
+        if (repo.findByUsername(req.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
-        });
+        }
+        if (req.getUserId() == null) {
+            throw new IllegalArgumentException("userId is required");
+        }
 
         Credential c = Credential.builder()
-                .id(UUID.randomUUID())
                 .userId(req.getUserId())
                 .username(req.getUsername())
                 .passwordHash(passwordEncoder.encode(req.getPassword()))
@@ -55,15 +56,20 @@ public class AuthService {
     }
 
     public TokenResponse refresh(String refreshToken) {
-        if (jwtService.validate(refreshToken)) throw new IllegalArgumentException("Invalid refresh token");
+        if (!jwtService.validate(refreshToken)) { // <-- обращаем условие
+            throw new IllegalArgumentException("Invalid refresh token");
+        }
         var claims = jwtService.parse(refreshToken).getBody();
         Long userId = Long.valueOf(claims.getSubject());
         String role = claims.get("role", String.class);
-        return new TokenResponse(jwtService.generateAccessToken(userId, role), jwtService.generateRefreshToken(userId, role));
+        return new TokenResponse(
+                jwtService.generateAccessToken(userId, role),
+                jwtService.generateRefreshToken(userId, role)
+        );
     }
 
     public ValidateResponse validate(String token) {
-        if (jwtService.validate(token)) return new ValidateResponse(null, null, false);
+        if (!jwtService.validate(token)) return new ValidateResponse(null, null, false);
         var claims = jwtService.parse(token).getBody();
         Long userId = Long.valueOf(claims.getSubject());
         String role = claims.get("role", String.class);

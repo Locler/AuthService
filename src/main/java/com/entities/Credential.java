@@ -17,6 +17,7 @@ public class Credential {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false, unique = true)
