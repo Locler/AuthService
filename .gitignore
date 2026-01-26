@@ -31,4 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
-.env
+
+# env files
+.env.local
+.env.docker
