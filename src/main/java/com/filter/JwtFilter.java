@@ -28,12 +28,6 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        String path = req.getRequestURI();
-        if (path.startsWith("/actuator/health")) { // пропускаем probe
-            chain.doFilter(req, res);
-            return;
-        }
-
         String header = req.getHeader(HttpHeaders.AUTHORIZATION);
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(req, res);
